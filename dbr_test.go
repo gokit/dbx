@@ -19,8 +19,8 @@ import (
 //
 
 var (
-	mysqlDSN    = os.Getenv("DBR_TEST_MYSQL_DSN")
-	postgresDSN = os.Getenv("DBR_TEST_POSTGRES_DSN")
+	mysqlDSN    = os.Getenv("dbx_TEST_MYSQL_DSN")
+	postgresDSN = os.Getenv("dbx_TEST_POSTGRES_DSN")
 	sqlite3DSN  = ":memory:"
 )
 
@@ -42,7 +42,7 @@ var (
 	testSession = []*Session{mysqlSession, postgresSession, sqlite3Session}
 )
 
-type dbrPerson struct {
+type dbxPerson struct {
 	Id    int64
 	Name  string
 	Email string
@@ -68,8 +68,8 @@ func reset(t *testing.T, sess *Session) {
 		autoIncrementType = "integer PRIMARY KEY"
 	}
 	for _, v := range []string{
-		`DROP TABLE IF EXISTS dbr_people`,
-		fmt.Sprintf(`CREATE TABLE dbr_people (
+		`DROP TABLE IF EXISTS dbx_people`,
+		fmt.Sprintf(`CREATE TABLE dbx_people (
 			id %s,
 			name varchar(255) NOT NULL,
 			email varchar(255)
@@ -96,7 +96,7 @@ func TestBasicCRUD(t *testing.T) {
 	for _, sess := range testSession {
 		reset(t, sess)
 
-		jonathan := dbrPerson{
+		jonathan := dbxPerson{
 			Name:  "jonathan",
 			Email: "jonathan@uservoice.com",
 		}
@@ -106,7 +106,7 @@ func TestBasicCRUD(t *testing.T) {
 			insertColumns = []string{"id", "name", "email"}
 		}
 		// insert
-		result, err := sess.InsertInto("dbr_people").Columns(insertColumns...).Record(&jonathan).Exec()
+		result, err := sess.InsertInto("dbx_people").Columns(insertColumns...).Record(&jonathan).Exec()
 		require.NoError(t, err)
 
 		rowsAffected, err := result.RowsAffected()
@@ -115,8 +115,8 @@ func TestBasicCRUD(t *testing.T) {
 
 		require.True(t, jonathan.Id > 0)
 		// select
-		var people []dbrPerson
-		count, err := sess.Select("*").From("dbr_people").Where(Eq("id", jonathan.Id)).Load(&people)
+		var people []dbxPerson
+		count, err := sess.Select("*").From("dbx_people").Where(Eq("id", jonathan.Id)).Load(&people)
 		require.NoError(t, err)
 		require.Equal(t, 1, count)
 		require.Equal(t, jonathan.Id, people[0].Id)
@@ -124,17 +124,17 @@ func TestBasicCRUD(t *testing.T) {
 		require.Equal(t, jonathan.Email, people[0].Email)
 
 		// select id
-		ids, err := sess.Select("id").From("dbr_people").ReturnInt64s()
+		ids, err := sess.Select("id").From("dbx_people").ReturnInt64s()
 		require.NoError(t, err)
 		require.Equal(t, 1, len(ids))
 
 		// select id limit
-		ids, err = sess.Select("id").From("dbr_people").Limit(1).ReturnInt64s()
+		ids, err = sess.Select("id").From("dbx_people").Limit(1).ReturnInt64s()
 		require.NoError(t, err)
 		require.Equal(t, 1, len(ids))
 
 		// update
-		result, err = sess.Update("dbr_people").Where(Eq("id", jonathan.Id)).Set("name", "jonathan1").Exec()
+		result, err = sess.Update("dbx_people").Where(Eq("id", jonathan.Id)).Set("name", "jonathan1").Exec()
 		require.NoError(t, err)
 
 		rowsAffected, err = result.RowsAffected()
@@ -142,11 +142,11 @@ func TestBasicCRUD(t *testing.T) {
 		require.Equal(t, int64(1), rowsAffected)
 
 		var n NullInt64
-		sess.Select("count(*)").From("dbr_people").Where("name = ?", "jonathan1").LoadOne(&n)
+		sess.Select("count(*)").From("dbx_people").Where("name = ?", "jonathan1").LoadOne(&n)
 		require.Equal(t, int64(1), n.Int64)
 
 		// delete
-		result, err = sess.DeleteFrom("dbr_people").Where(Eq("id", jonathan.Id)).Exec()
+		result, err = sess.DeleteFrom("dbx_people").Where(Eq("id", jonathan.Id)).Exec()
 		require.NoError(t, err)
 
 		rowsAffected, err = result.RowsAffected()
@@ -154,7 +154,7 @@ func TestBasicCRUD(t *testing.T) {
 		require.Equal(t, int64(1), rowsAffected)
 
 		// select id
-		ids, err = sess.Select("id").From("dbr_people").ReturnInt64s()
+		ids, err = sess.Select("id").From("dbx_people").ReturnInt64s()
 		require.NoError(t, err)
 		require.Equal(t, 0, len(ids))
 	}
@@ -173,20 +173,20 @@ func TestTimeout(t *testing.T) {
 
 		// session op timeout
 		sess.Timeout = time.Nanosecond
-		var people []dbrPerson
-		_, err := sess.Select("*").From("dbr_people").Load(&people)
+		var people []dbxPerson
+		_, err := sess.Select("*").From("dbx_people").Load(&people)
 		require.Equal(t, context.DeadlineExceeded, err)
 		require.Equal(t, 1, sess.EventReceiver.(*testTraceReceiver).errored)
 
-		_, err = sess.InsertInto("dbr_people").Columns("name", "email").Values("test", "test@test.com").Exec()
+		_, err = sess.InsertInto("dbx_people").Columns("name", "email").Values("test", "test@test.com").Exec()
 		require.Equal(t, context.DeadlineExceeded, err)
 		require.Equal(t, 2, sess.EventReceiver.(*testTraceReceiver).errored)
 
-		_, err = sess.Update("dbr_people").Set("name", "test1").Exec()
+		_, err = sess.Update("dbx_people").Set("name", "test1").Exec()
 		require.Equal(t, context.DeadlineExceeded, err)
 		require.Equal(t, 3, sess.EventReceiver.(*testTraceReceiver).errored)
 
-		_, err = sess.DeleteFrom("dbr_people").Exec()
+		_, err = sess.DeleteFrom("dbx_people").Exec()
 		require.Equal(t, context.DeadlineExceeded, err)
 		require.Equal(t, 4, sess.EventReceiver.(*testTraceReceiver).errored)
 
@@ -197,16 +197,16 @@ func TestTimeout(t *testing.T) {
 		defer tx.RollbackUnlessCommitted()
 		tx.Timeout = time.Nanosecond
 
-		_, err = tx.Select("*").From("dbr_people").Load(&people)
+		_, err = tx.Select("*").From("dbx_people").Load(&people)
 		require.Equal(t, context.DeadlineExceeded, err)
 
-		_, err = tx.InsertInto("dbr_people").Columns("name", "email").Values("test", "test@test.com").Exec()
+		_, err = tx.InsertInto("dbx_people").Columns("name", "email").Values("test", "test@test.com").Exec()
 		require.Equal(t, context.DeadlineExceeded, err)
 
-		_, err = tx.Update("dbr_people").Set("name", "test1").Exec()
+		_, err = tx.Update("dbx_people").Set("name", "test1").Exec()
 		require.Equal(t, context.DeadlineExceeded, err)
 
-		_, err = tx.DeleteFrom("dbr_people").Exec()
+		_, err = tx.DeleteFrom("dbx_people").Exec()
 		require.Equal(t, context.DeadlineExceeded, err)
 	}
 }

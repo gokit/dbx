@@ -42,7 +42,7 @@ func (b *DeleteStmt) Build(d Dialect, buf Buffer) error {
 
 	if len(b.WhereCond) > 0 {
 		buf.WriteString(" WHERE ")
-		err := And(b.WhereCond...).Build(d, buf)
+		err := logicCond(b.WhereCond...).Build(d, buf)
 		if err != nil {
 			return err
 		}
@@ -109,9 +109,13 @@ func (tx *Tx) DeleteBySql(query string, value ...interface{}) *DeleteStmt {
 	return b
 }
 
-// Where adds a where condition.
+// Where reset and then adds a where condition.
 // query can be Builder or string. value is used only if query type is string.
 func (b *DeleteStmt) Where(query interface{}, value ...interface{}) *DeleteStmt {
+
+	// reset
+	b.WhereCond = nil
+
 	switch query := query.(type) {
 	case string:
 		b.WhereCond = append(b.WhereCond, Expr(query, value...))

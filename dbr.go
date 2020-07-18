@@ -48,7 +48,7 @@ type Connection struct {
 
 // Session represents a business unit of execution.
 //
-// All queries in gocraft/dbr are made in the context of a session.
+// All queries in gocraft/dbx are made in the context of a session.
 // This is because when instrumenting your app, it's important
 // to understand which business action the query took place in.
 //
@@ -119,7 +119,7 @@ func exec(ctx context.Context, runner runner, log EventReceiver, builder Builder
 	err := i.encodePlaceholder(builder, true)
 	query, value := i.String(), i.Value()
 	if err != nil {
-		return nil, log.EventErrKv("dbr.exec.interpolate", err, kvs{
+		return nil, log.EventErrKv("dbx.exec.interpolate", err, kvs{
 			"sql":  query,
 			"args": fmt.Sprint(value),
 		})
@@ -127,14 +127,14 @@ func exec(ctx context.Context, runner runner, log EventReceiver, builder Builder
 
 	startTime := time.Now()
 	defer func() {
-		log.TimingKv("dbr.exec", time.Since(startTime).Nanoseconds(), kvs{
+		log.TimingKv("dbx.exec", time.Since(startTime).Nanoseconds(), kvs{
 			"sql": query,
 		})
 	}()
 
 	traceImpl, hasTracingImpl := log.(TracingEventReceiver)
 	if hasTracingImpl {
-		ctx = traceImpl.SpanStart(ctx, "dbr.exec", query)
+		ctx = traceImpl.SpanStart(ctx, "dbx.exec", query)
 		defer traceImpl.SpanFinish(ctx)
 	}
 
@@ -143,7 +143,7 @@ func exec(ctx context.Context, runner runner, log EventReceiver, builder Builder
 		if hasTracingImpl {
 			traceImpl.SpanError(ctx, err)
 		}
-		return result, log.EventErrKv("dbr.exec.exec", err, kvs{
+		return result, log.EventErrKv("dbx.exec.exec", err, kvs{
 			"sql": query,
 		})
 	}
@@ -162,7 +162,7 @@ func queryRows(ctx context.Context, runner runner, log EventReceiver, builder Bu
 	err := i.encodePlaceholder(builder, true)
 	query, value := i.String(), i.Value()
 	if err != nil {
-		return query, nil, log.EventErrKv("dbr.select.interpolate", err, kvs{
+		return query, nil, log.EventErrKv("dbx.select.interpolate", err, kvs{
 			"sql":  query,
 			"args": fmt.Sprint(value),
 		})
@@ -170,14 +170,14 @@ func queryRows(ctx context.Context, runner runner, log EventReceiver, builder Bu
 
 	startTime := time.Now()
 	defer func() {
-		log.TimingKv("dbr.select", time.Since(startTime).Nanoseconds(), kvs{
+		log.TimingKv("dbx.select", time.Since(startTime).Nanoseconds(), kvs{
 			"sql": query,
 		})
 	}()
 
 	traceImpl, hasTracingImpl := log.(TracingEventReceiver)
 	if hasTracingImpl {
-		ctx = traceImpl.SpanStart(ctx, "dbr.select", query)
+		ctx = traceImpl.SpanStart(ctx, "dbx.select", query)
 		defer traceImpl.SpanFinish(ctx)
 	}
 
@@ -186,7 +186,7 @@ func queryRows(ctx context.Context, runner runner, log EventReceiver, builder Bu
 		if hasTracingImpl {
 			traceImpl.SpanError(ctx, err)
 		}
-		return query, nil, log.EventErrKv("dbr.select.load.query", err, kvs{
+		return query, nil, log.EventErrKv("dbx.select.load.query", err, kvs{
 			"sql": query,
 		})
 	}
@@ -208,7 +208,7 @@ func query(ctx context.Context, runner runner, log EventReceiver, builder Builde
 	}
 	count, err := Load(rows, dest)
 	if err != nil {
-		return 0, log.EventErrKv("dbr.select.load.scan", err, kvs{
+		return 0, log.EventErrKv("dbx.select.load.scan", err, kvs{
 			"sql": query,
 		})
 	}

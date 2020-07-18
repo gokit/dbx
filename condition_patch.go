@@ -1,13 +1,12 @@
 package dbx
 
 func buildLogicCond(d Dialect, buf Buffer, cond ...Builder) error {
-
 	for i, c := range cond {
 		if i > 0 {
 			buf.WriteString(" ")
 
 			switch c.(type) {
-			case OrBuildFunc:
+			case orBuildFunc:
 				buf.WriteString("OR")
 			default:
 				buf.WriteString("AND")
@@ -19,16 +18,13 @@ func buildLogicCond(d Dialect, buf Buffer, cond ...Builder) error {
 		if len(cond) > 1 {
 			buf.WriteString("(")
 		}
-
 		err := c.Build(d, buf)
 		if err != nil {
 			return err
 		}
-
 		if len(cond) > 1 {
 			buf.WriteString(")")
 		}
-
 	}
 
 	return nil

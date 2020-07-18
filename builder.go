@@ -3,7 +3,7 @@ package dbx
 // Builder builds SQL in Dialect like MySQL, and PostgreSQL.
 // The raw SQL and values are stored in Buffer.
 //
-// The core of gocraft/dbr is interpolation, which can expand ? with arbitrary SQL.
+// The core of gocraft/dbx is interpolation, which can expand ? with arbitrary SQL.
 // If you need a feature that is not currently supported, you can build it
 // on your own (or use Expr).
 //

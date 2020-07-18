@@ -230,10 +230,11 @@ func (b *SelectStmt) Distinct() *SelectStmt {
 	return b
 }
 
-// Where adds a where condition.
+// Where reset and then adds a where condition.
 // query can be Builder or string. value is used only if query type is string.
 func (b *SelectStmt) Where(query interface{}, value ...interface{}) *SelectStmt {
 
+	// reset
 	b.WhereCond = nil
 
 	switch query := query.(type) {
@@ -245,10 +246,11 @@ func (b *SelectStmt) Where(query interface{}, value ...interface{}) *SelectStmt 
 	return b
 }
 
-// Having adds a having condition.
+// Having reset and then adds a having condition.
 // query can be Builder or string. value is used only if query type is string.
 func (b *SelectStmt) Having(query interface{}, value ...interface{}) *SelectStmt {
 
+	// reset
 	b.HavingCond = nil
 
 	switch query := query.(type) {
@@ -260,8 +262,12 @@ func (b *SelectStmt) Having(query interface{}, value ...interface{}) *SelectStmt
 	return b
 }
 
-// GroupBy specifies columns for grouping.
+// GroupBy reset and then specifies columns for grouping.
 func (b *SelectStmt) GroupBy(col ...string) *SelectStmt {
+
+	// reset
+	b.Group = nil
+
 	for _, group := range col {
 		b.Group = append(b.Group, Expr(group))
 	}
@@ -278,8 +284,12 @@ func (b *SelectStmt) OrderDesc(col string) *SelectStmt {
 	return b
 }
 
-// OrderBy specifies columns for ordering.
+// OrderBy reset and then specifies columns for ordering.
 func (b *SelectStmt) OrderBy(col string) *SelectStmt {
+
+	// reset
+	b.Order = nil
+
 	b.Order = append(b.Order, Expr(col))
 	return b
 }
@@ -379,7 +389,7 @@ func (b *SelectStmt) LoadOneContext(ctx context.Context, value interface{}) erro
 // LoadOne loads SQL result into go variable that is not a slice.
 // Unlike Load, it returns ErrNotFound if the SQL result row count is 0.
 //
-// See https://godoc.org/github.com/gocraft/dbr#Load.
+// See https://godoc.org/github.com/gocraft/dbx#Load.
 func (b *SelectStmt) LoadOne(value interface{}) error {
 	return b.LoadOneContext(context.Background(), value)
 }
@@ -390,7 +400,7 @@ func (b *SelectStmt) LoadContext(ctx context.Context, value interface{}) (int, e
 
 // Load loads multi-row SQL result into a slice of go variables.
 //
-// See https://godoc.org/github.com/gocraft/dbr#Load.
+// See https://godoc.org/github.com/gocraft/dbx#Load.
 func (b *SelectStmt) Load(value interface{}) (int, error) {
 	return b.LoadContext(context.Background(), value)
 }

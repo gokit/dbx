@@ -1,8 +1,9 @@
 package dbx
 
-type OrBuildFunc func(Dialect, Buffer) error
+// orBuildFunc implements Builder.
+type orBuildFunc func(Dialect, Buffer) error
 
 // Build calls itself to build SQL.
-func (b OrBuildFunc) Build(d Dialect, buf Buffer) error {
+func (b orBuildFunc) Build(d Dialect, buf Buffer) error {
 	return b(d, buf)
 }

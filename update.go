@@ -62,7 +62,7 @@ func (b *UpdateStmt) Build(d Dialect, buf Buffer) error {
 
 	if len(b.WhereCond) > 0 {
 		buf.WriteString(" WHERE ")
-		err := And(b.WhereCond...).Build(d, buf)
+		err := logicCond(b.WhereCond...).Build(d, buf)
 		if err != nil {
 			return err
 		}
@@ -143,9 +143,13 @@ func (tx *Tx) UpdateBySql(query string, value ...interface{}) *UpdateStmt {
 	return b
 }
 
-// Where adds a where condition.
+// Where reset and then adds a where condition.
 // query can be Builder or string. value is used only if query type is string.
 func (b *UpdateStmt) Where(query interface{}, value ...interface{}) *UpdateStmt {
+
+	// reset
+	b.WhereCond = nil
+
 	switch query := query.(type) {
 	case string:
 		b.WhereCond = append(b.WhereCond, Expr(query, value...))

@@ -60,7 +60,7 @@ func BenchmarkLoadValues(b *testing.B) {
 				require.Len(b, suggs, n)
 			}
 		})
-		b.Run(fmt.Sprintf("dbr_%d", n), func(b *testing.B) {
+		b.Run(fmt.Sprintf("dbx_%d", n), func(b *testing.B) {
 			b.StopTimer()
 
 			for i := 0; i < b.N; i++ {

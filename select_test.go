@@ -49,7 +49,7 @@ func TestSliceWithSQLScannerSelect(t *testing.T) {
 	for _, sess := range testSession {
 		reset(t, sess)
 
-		_, err := sess.InsertInto("dbr_people").
+		_, err := sess.InsertInto("dbx_people").
 			Columns("name", "email").
 			Values("test1", "test1@test.com").
 			Values("test2", "test2@test.com").
@@ -58,7 +58,7 @@ func TestSliceWithSQLScannerSelect(t *testing.T) {
 
 		//plain string slice (original behavior)
 		var stringSlice []string
-		cnt, err := sess.Select("name").From("dbr_people").Load(&stringSlice)
+		cnt, err := sess.Select("name").From("dbx_people").Load(&stringSlice)
 
 		require.NoError(t, err)
 		require.Equal(t, 3, cnt)
@@ -66,7 +66,7 @@ func TestSliceWithSQLScannerSelect(t *testing.T) {
 
 		//string slice with sql.Scanner implemented, should act as a single record
 		var sliceScanner stringSliceWithSQLScanner
-		cnt, err = sess.Select("name").From("dbr_people").Load(&sliceScanner)
+		cnt, err = sess.Select("name").From("dbx_people").Load(&sliceScanner)
 
 		require.NoError(t, err)
 		require.Equal(t, 1, cnt)
@@ -78,7 +78,7 @@ func TestMaps(t *testing.T) {
 	for _, sess := range testSession {
 		reset(t, sess)
 
-		_, err := sess.InsertInto("dbr_people").
+		_, err := sess.InsertInto("dbx_people").
 			Columns("name", "email").
 			Values("test1", "test1@test.com").
 			Values("test2", "test2@test.com").
@@ -86,14 +86,14 @@ func TestMaps(t *testing.T) {
 			Exec()
 
 		var m map[string]string
-		cnt, err := sess.Select("email, name").From("dbr_people").Load(&m)
+		cnt, err := sess.Select("email, name").From("dbx_people").Load(&m)
 		require.NoError(t, err)
 		require.Equal(t, 3, cnt)
 		require.Len(t, m, 3)
 		require.Equal(t, "test1", m["test1@test.com"])
 
-		var m2 map[int64]*dbrPerson
-		cnt, err = sess.Select("id, name, email").From("dbr_people").Load(&m2)
+		var m2 map[int64]*dbxPerson
+		cnt, err = sess.Select("id, name, email").From("dbx_people").Load(&m2)
 		require.NoError(t, err)
 		require.Equal(t, 3, cnt)
 		require.Len(t, m2, 3)
@@ -103,7 +103,7 @@ func TestMaps(t *testing.T) {
 		require.Equal(t, int64(0), m2[1].Id)
 
 		var m3 map[string][]string
-		cnt, err = sess.Select("name, email").From("dbr_people").OrderAsc("id").Load(&m3)
+		cnt, err = sess.Select("name, email").From("dbx_people").OrderAsc("id").Load(&m3)
 		require.NoError(t, err)
 		require.Equal(t, 3, cnt)
 		require.Len(t, m3, 2)
@@ -111,7 +111,7 @@ func TestMaps(t *testing.T) {
 		require.Equal(t, []string{"test2@test.com", "test3@test.com"}, m3["test2"])
 
 		var set map[string]struct{}
-		cnt, err = sess.Select("name").From("dbr_people").Load(&set)
+		cnt, err = sess.Select("name").From("dbx_people").Load(&set)
 		require.NoError(t, err)
 		require.Equal(t, 3, cnt)
 		require.Len(t, set, 2)
@@ -124,18 +124,18 @@ func TestSelectRows(t *testing.T) {
 	for _, sess := range testSession {
 		reset(t, sess)
 
-		_, err := sess.InsertInto("dbr_people").
+		_, err := sess.InsertInto("dbx_people").
 			Columns("name", "email").
 			Values("test1", "test1@test.com").
 			Values("test2", "test2@test.com").
 			Values("test3", "test3@test.com").
 			Exec()
 
-		rows, err := sess.Select("*").From("dbr_people").OrderAsc("id").Rows()
+		rows, err := sess.Select("*").From("dbx_people").OrderAsc("id").Rows()
 		require.NoError(t, err)
 		defer rows.Close()
 
-		want := []dbrPerson{
+		want := []dbxPerson{
 			{Id: 1, Name: "test1", Email: "test1@test.com"},
 			{Id: 2, Name: "test2", Email: "test2@test.com"},
 			{Id: 3, Name: "test3", Email: "test3@test.com"},
@@ -143,7 +143,7 @@ func TestSelectRows(t *testing.T) {
 
 		count := 0
 		for rows.Next() {
-			var p dbrPerson
+			var p dbxPerson
 			require.NoError(t, rows.Scan(&p.Id, &p.Name, &p.Email))
 			require.Equal(t, want[count], p)
 			count++
@@ -157,7 +157,7 @@ func TestInterfaceLoader(t *testing.T) {
 	for _, sess := range testSession {
 		reset(t, sess)
 
-		_, err := sess.InsertInto("dbr_people").
+		_, err := sess.InsertInto("dbx_people").
 			Columns("name", "email").
 			Values("test1", "test1@test.com").
 			Values("test2", "test2@test.com").
@@ -165,11 +165,11 @@ func TestInterfaceLoader(t *testing.T) {
 			Exec()
 
 		var m []interface{}
-		cnt, err := sess.Select("*").From("dbr_people").Load(InterfaceLoader(&m, dbrPerson{}))
+		cnt, err := sess.Select("*").From("dbx_people").Load(InterfaceLoader(&m, dbxPerson{}))
 		require.NoError(t, err)
 		require.Equal(t, 3, cnt)
 		require.Len(t, m, 3)
-		person, ok := m[0].(dbrPerson)
+		person, ok := m[0].(dbxPerson)
 		require.True(t, ok)
 		require.Equal(t, "test1", person.Name)
 	}

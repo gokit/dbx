@@ -11,12 +11,18 @@ func buildCond(d Dialect, buf Buffer, pred string, cond ...Builder) error {
 			buf.WriteString(pred)
 			buf.WriteString(" ")
 		}
-		buf.WriteString("(")
+
+		if len(cond) > 1 {
+			buf.WriteString("(")
+		}
 		err := c.Build(d, buf)
 		if err != nil {
 			return err
 		}
-		buf.WriteString(")")
+		if len(cond) > 1 {
+			buf.WriteString(")")
+		}
+
 	}
 	return nil
 }

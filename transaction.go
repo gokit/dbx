@@ -23,9 +23,9 @@ func (tx *Tx) GetTimeout() time.Duration {
 func (sess *Session) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 	tx, err := sess.Connection.BeginTx(ctx, opts)
 	if err != nil {
-		return nil, sess.EventErr("dbr.begin.error", err)
+		return nil, sess.EventErr("dbx.begin.error", err)
 	}
-	sess.Event("dbr.begin")
+	sess.Event("dbx.begin")
 
 	return &Tx{
 		EventReceiver: sess.EventReceiver,
@@ -44,9 +44,9 @@ func (sess *Session) Begin() (*Tx, error) {
 func (tx *Tx) Commit() error {
 	err := tx.Tx.Commit()
 	if err != nil {
-		return tx.EventErr("dbr.commit.error", err)
+		return tx.EventErr("dbx.commit.error", err)
 	}
-	tx.Event("dbr.commit")
+	tx.Event("dbx.commit")
 	return nil
 }
 
@@ -54,9 +54,9 @@ func (tx *Tx) Commit() error {
 func (tx *Tx) Rollback() error {
 	err := tx.Tx.Rollback()
 	if err != nil {
-		return tx.EventErr("dbr.rollback", err)
+		return tx.EventErr("dbx.rollback", err)
 	}
-	tx.Event("dbr.rollback")
+	tx.Event("dbx.rollback")
 	return nil
 }
 
@@ -72,8 +72,8 @@ func (tx *Tx) RollbackUnlessCommitted() {
 	if err == sql.ErrTxDone {
 		// ok
 	} else if err != nil {
-		tx.EventErr("dbr.rollback_unless_committed", err)
+		tx.EventErr("dbx.rollback_unless_committed", err)
 	} else {
-		tx.Event("dbr.rollback")
+		tx.Event("dbx.rollback")
 	}
 }

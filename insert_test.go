@@ -28,15 +28,15 @@ func TestPostgresReturning(t *testing.T) {
 	sess := postgresSession
 	reset(t, sess)
 
-	var person dbrPerson
-	err := sess.InsertInto("dbr_people").Columns("name").Record(&person).
+	var person dbxPerson
+	err := sess.InsertInto("dbx_people").Columns("name").Record(&person).
 		Returning("id").Load(&person.Id)
 	require.NoError(t, err)
 	require.True(t, person.Id > 0)
 	require.Len(t, sess.EventReceiver.(*testTraceReceiver).started, 1)
-	require.Contains(t, sess.EventReceiver.(*testTraceReceiver).started[0].eventName, "dbr.select")
+	require.Contains(t, sess.EventReceiver.(*testTraceReceiver).started[0].eventName, "dbx.select")
 	require.Contains(t, sess.EventReceiver.(*testTraceReceiver).started[0].query, "INSERT")
-	require.Contains(t, sess.EventReceiver.(*testTraceReceiver).started[0].query, "dbr_people")
+	require.Contains(t, sess.EventReceiver.(*testTraceReceiver).started[0].query, "dbx_people")
 	require.Contains(t, sess.EventReceiver.(*testTraceReceiver).started[0].query, "name")
 	require.Equal(t, 1, sess.EventReceiver.(*testTraceReceiver).finished)
 	require.Equal(t, 0, sess.EventReceiver.(*testTraceReceiver).errored)
