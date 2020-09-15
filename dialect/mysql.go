@@ -2,14 +2,20 @@ package dialect
 
 import (
 	"fmt"
+	"github.com/gokit/dbx/schema"
+	"github.com/gokit/dbx/utils"
 	"strings"
 	"time"
 )
 
 type mysql struct{}
 
+func (d mysql) DriverName() string {
+	return "mysql"
+}
+
 func (d mysql) QuoteIdent(s string) string {
-	return quoteIdent(s, "`")
+	return utils.QuoteIdent(s, "`")
 }
 
 func (d mysql) EncodeString(s string) string {
@@ -63,4 +69,8 @@ func (d mysql) EncodeBytes(b []byte) string {
 
 func (d mysql) Placeholder(_ int) string {
 	return "?"
+}
+
+func (d mysql) Schema(query schema.Query) schema.Dialect {
+	return schema.MySQL(query)
 }

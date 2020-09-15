@@ -2,14 +2,20 @@ package dialect
 
 import (
 	"fmt"
+	"github.com/gokit/dbx/schema"
+	"github.com/gokit/dbx/utils"
 	"strings"
 	"time"
 )
 
 type postgreSQL struct{}
 
+func (d postgreSQL) DriverName() string {
+	return "postgres"
+}
+
 func (d postgreSQL) QuoteIdent(s string) string {
-	return quoteIdent(s, `"`)
+	return utils.QuoteIdent(s, `"`)
 }
 
 func (d postgreSQL) EncodeString(s string) string {
@@ -34,4 +40,8 @@ func (d postgreSQL) EncodeBytes(b []byte) string {
 
 func (d postgreSQL) Placeholder(n int) string {
 	return fmt.Sprintf("$%d", n+1)
+}
+
+func (d postgreSQL) Schema(query schema.Query) schema.Dialect {
+	return schema.PostgreSQL(query)
 }
